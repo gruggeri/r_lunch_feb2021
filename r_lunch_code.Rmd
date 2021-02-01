@@ -5,7 +5,6 @@ output: github_document
 # Cartography in R
 ## An introduction to vector data
 
-
 ```{r message = FALSE}
 # install.packages(c("tidyverse", "sf", "ggrepel",
 #                    "tmap", "tmaptools"))
@@ -15,7 +14,7 @@ library(tidyverse)
 ```
 
 ```{r }
-library(sf) # the library for spatial data visualisation
+library(sf)
 ```
 
 
@@ -143,7 +142,7 @@ ggplot()+
     )+
   geom_sf(
     data = roads,
-    color = "#fde293")
+    color = "grey80")
 ```
 
 ```{r}
@@ -154,7 +153,7 @@ ggplot()+
     )+
   geom_sf(
     data = roads,
-    color = "#fde293") +
+    color = "grey80") +
   theme_void() + # adding theme void
   coord_sf(ylim = c(46.193854, 46.205765),
            xlim = c(6.134706, 6.151571)) # zooming in
@@ -170,7 +169,7 @@ ggplot()+
     )+
   geom_sf(
     data = roads,
-    color = "#fde293") +
+    color = "grey80") +
   geom_sf(data =unimail_polygon,  ##
           fill = "yellow") +
   geom_sf(data = bins, ##
@@ -196,7 +195,7 @@ ggplot()+
     )+
   geom_sf(
     data = roads,
-    color = "#fde293") +
+    color = "grey80") +
   geom_sf(data =unimail_polygon,  
           fill = "yellow") +
   geom_sf(data = st_intersection(unimail_polygon, bins)) + ##
@@ -238,7 +237,7 @@ ggplot()+
     )+
   geom_sf(
     data = roads,
-    color = "#fde293") +
+    color = "grey80") +
   geom_sf(data =unimail_polygon, 
           fill = "yellow") +
   geom_sf(data = st_intersection(buffered_polys, bins)) + ##
@@ -252,7 +251,7 @@ ggplot()+
 ```
 
 
-## Workind with COVID-19 data
+## Working with COVID-19 data
 
 
 ```{r}
@@ -260,6 +259,7 @@ ggplot()+
 swiss_covid_latest <- read_csv("data/latest_swiss_data.csv")
 
 glimpse(swiss_covid_latest)
+
 ```
 
 
