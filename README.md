@@ -1,5 +1,5 @@
 
-# Cartography in R: and introduction
+# Cartography in R: an introduction to vector data
 
 The vector data model represents the world using points, lines and
 polygons.
@@ -12,7 +12,7 @@ represented in computers, with emphasis on the spatial geometry of these
 objects. It also describes how such objects can be stored in and
 retrieved from databases, and which geometrical operations should be
 defined for them. As we will see later, the `{sf}` library works very
-well with the `{tidyverse}`
+well with the `{tidyverse}`.
 
 ``` r
 # install.packages(c("tidyverse", "sf", "ggrepel",
@@ -21,6 +21,9 @@ well with the `{tidyverse}`
 
 library(tidyverse)
 ```
+
+Useful to know: the `{sf}` library relies on external dependencies
+(GEOS, GDAL and proj).
 
 ``` r
 library(sf) # the library for spatial data visualisation
