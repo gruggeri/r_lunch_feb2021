@@ -15,12 +15,16 @@ knitr::opts_chunk$set(echo = TRUE)
 `{sf}` stands for simple features, which refers to a formal standard (ISO 19125-1:2004) that describes how objects in the real world can be represented in computers, with emphasis on the spatial geometry of these objects. It also describes how such objects can be stored in and retrieved from databases, and which geometrical operations should be defined for them.
 As we will see later, the `{sf}` library works very well with the `{tidyverse}`
 
-```{r}
+```{r message = FALSE}
 # install.packages(c("tidyverse", "sf", "ggrepel",
 #                    "tmap", "tmaptools"))
 
 
 library(tidyverse)
+```
+
+
+```{r }
 library(sf) # the library for spatial data visualisation
 ```
 

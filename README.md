@@ -22,17 +22,6 @@ well with the `{tidyverse}`
 library(tidyverse)
 ```
 
-    ## ── Attaching packages ────────────────────────────────────────────── tidyverse 1.3.0 ──
-
-    ## ✓ ggplot2 3.3.2     ✓ purrr   0.3.4
-    ## ✓ tibble  3.0.3     ✓ dplyr   1.0.2
-    ## ✓ tidyr   1.1.2     ✓ stringr 1.4.0
-    ## ✓ readr   1.4.0     ✓ forcats 0.5.0
-
-    ## ── Conflicts ───────────────────────────────────────────────── tidyverse_conflicts() ──
-    ## x dplyr::filter() masks stats::filter()
-    ## x dplyr::lag()    masks stats::lag()
-
 ``` r
 library(sf) # the library for spatial data visualisation
 ```
@@ -110,7 +99,7 @@ unimail
 plot(unimail)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 ``` r
 # from a series of point, we actually want to create a polygon
@@ -143,7 +132,7 @@ unimail_polygon
 plot(unimail_polygon)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 ``` r
 class(unimail_polygon)
@@ -310,7 +299,7 @@ ggplot()+
     )
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
 ``` r
 ggplot()+
@@ -323,7 +312,7 @@ ggplot()+
     color = "#fde293")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 ``` r
 ggplot()+
@@ -339,7 +328,7 @@ ggplot()+
            xlim = c(6.134706, 6.151571)) # zooming in
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 ``` r
 # plot the data 
@@ -362,7 +351,7 @@ ggplot()+
   theme_void(base_size = 10)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 ## Manipulating geometries
 
@@ -409,7 +398,7 @@ ggplot()+
     ## Warning: attribute variables are assumed to be spatially constant throughout all
     ## geometries
 
-![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
 Let’s look a bit further away from the polygon
 
@@ -434,7 +423,7 @@ ggplot()+
     color = "#fde293")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
 
 ``` r
 st_intersection(buffered_polys, bins)
@@ -495,7 +484,7 @@ ggplot()+
     ## Warning: attribute variables are assumed to be spatially constant throughout all
     ## geometries
 
-![](README_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
 
 ## Overview presentation
 
@@ -507,7 +496,7 @@ swiss_covid_latest <- read_csv("data/latest_swiss_data.csv")
 ```
 
     ## 
-    ## ── Column specification ───────────────────────────────────────────────────────────────
+    ## ── Column specification ──────────────────────────────────────────────────────────────
     ## cols(
     ##   date = col_date(format = ""),
     ##   abbreviation_canton_and_fl = col_character(),
@@ -581,7 +570,7 @@ codes <- read_csv("data/canton_codes.csv")
 ```
 
     ## 
-    ## ── Column specification ───────────────────────────────────────────────────────────────
+    ## ── Column specification ──────────────────────────────────────────────────────────────
     ## cols(
     ##   code = col_character(),
     ##   code_num = col_double()
@@ -670,7 +659,7 @@ ggplot(data= canton_shape,
   theme_void()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
 
 I will now divide the continuous variable into categories. I will use
 quantiles, as usually this way allows for colors, and therefore
@@ -742,7 +731,7 @@ ggplot(data = canton_shape) +
        caption = str_glue("source: OFSP | updated {unique(canton_shape$date)}"))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
 
 ``` r
 ## Add labels to show the incidence by canton
@@ -768,7 +757,7 @@ ggplot(data = canton_shape) +
        caption = str_glue("source: OFSP | updated {unique(canton_shape$date)}"))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
 
 ### The `tmap` way
 
@@ -784,7 +773,7 @@ tm_shape(canton_shape) +
               palette = "-viridis")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-35-1.png)<!-- -->
 
 ``` r
 osmbb <-  tmaptools::bb(canton_shape,
@@ -801,7 +790,7 @@ tm_shape(osmtiles) +
   tm_layout(frame = FALSE)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-35-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->
 
 To make your map interactive, use `tmap_mode("view")` before plotting it
 
