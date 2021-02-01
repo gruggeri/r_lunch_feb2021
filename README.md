@@ -15,6 +15,10 @@ defined for them. As we will see later, the `{sf}` library works very
 well with the `{tidyverse}`
 
 ``` r
+# install.packages(c("tidyverse", "sf", "ggrepel",
+#                    "tmap", "tmaptools"))
+
+
 library(tidyverse)
 ```
 
@@ -472,8 +476,7 @@ ggplot()+
     color = "#fde293") +
   geom_sf(data =unimail_polygon, 
           fill = "yellow") +
-  geom_sf(data = st_intersection(buffered_polys, bins), # bins close to unimail
-          alpha = 0.1) +
+  geom_sf(data = st_intersection(buffered_polys, bins))+ # bins close to unimail 
   coord_sf(ylim = c(46.193854, 46.205765),
            xlim = c(6.134706, 6.151571)) +
   labs(title = "Geneva",
