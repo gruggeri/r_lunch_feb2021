@@ -3,24 +3,25 @@ output: github_document
 ---
 
 # Cartography in R
-## An introduction to vector data
+
+## An introduction to vector data: finding Geneva trash bins around Unimail
 
 ```{r message = FALSE}
 # install.packages(c("tidyverse", "sf", "ggrepel",
 #                    "tmap", "tmaptools"))
 
-
 library(tidyverse)
 ```
 
-```{r }
+```{r}
 library(sf)
 ```
 
 
 ```{r}
 
-unimail_point <- st_point(x = c(46.1952452857602, 6.14051554056255))
+unimail_point <- st_point(x = c(46.1952452857602, 
+                                6.14051554056255))
 
 unimail_point 
 
@@ -44,7 +45,7 @@ unimail_df
 
 unimail <- unimail_df %>% 
   st_as_sf(coords=c("lon", "lat"),
-           crs = "EPSG:4326") 
+           crs = "EPSG:4326")
 
 
 unimail
@@ -76,8 +77,6 @@ plot(unimail_polygon)
 
 ```{r}
 class(unimail_polygon)
-
-unimail_polygon
 ```
 
 
@@ -103,6 +102,7 @@ st_drop_geometry(unimail_polygon)
 ```{r}
 
 bins <- st_read("data/SHP_VDG_CORBEILLES_DECHETS/VDG_CORBEILLES_DECHETS.shp") 
+
 ```
 
 
@@ -128,7 +128,7 @@ water <- st_read("data/SHP_GEO_LAC/GEO_LAC.shp") %>%
 ```{r}
 ggplot()+
   geom_sf(
-    data =water,
+    data = water,
     fill = "lightblue"
     )
 ```
@@ -178,7 +178,7 @@ ggplot()+
            xlim = c(6.134706, 6.151571)) +
   labs(title = "Geneva",
        caption = "Source: Système d'information \n du territoire à Genève (SITG)")+
-  theme_void(base_size = 10)
+  theme_void()
 
 ```
 
@@ -210,7 +210,7 @@ ggplot()+
 
 ```{r}
 buffered_polys <-  st_buffer(unimail_polygon, 
-                             dist = 0.001) 
+                             dist = 0.001)
 
 ggplot()+
   geom_sf(
@@ -252,7 +252,6 @@ ggplot()+
 
 
 ## Working with COVID-19 data
-
 
 ```{r}
 
@@ -343,8 +342,6 @@ glimpse(canton_shape)
 ```
 
 
-
-
 ```{r}
 
 ggplot(data = canton_shape) +
@@ -383,8 +380,6 @@ ggplot(data = canton_shape) +
 ```
 
 
-
-
 ## The `tmap` way
 
 ```{r}
@@ -404,7 +399,7 @@ tm_shape(canton_shape) +
 
 ```{r}
 osmbb <-  tmaptools::bb(canton_shape,
-                        ext=1.1 )# to enlarge a bit the bounding box
+                        ext=1.1 ) # to enlarge a bit the bounding box
 
 osmtiles <- tmaptools::read_osm(osmbb, type="esri-topo")
 
