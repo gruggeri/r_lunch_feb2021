@@ -1,20 +1,23 @@
 
 # Cartography in R: an introduction to vector data
 
-The vector data model represents the world using points, lines and
-polygons.
+This tutorial will only touch vector data model, that represents the
+world using points, lines and polygons. The go-to library in `R` to work
+with vector data is `{sf}`.
 
-## Starting with `{sf}`
+## Starting with `{sf}`: creating a `{sf}` objects
 
 `{sf}` stands for simple features, which refers to a formal standard
-(ISO 19125-1:2004) that describes how objects in the real world can be
-represented in computers, with emphasis on the spatial geometry of these
-objects. It also describes how such objects can be stored in and
-retrieved from databases, and which geometrical operations should be
-defined for them. As we will see later, the `{sf}` library works very
-well with the `{tidyverse}`.
+(ISO 19125-1:2004) that describes how objects are represented in
+computer. It also describes how such objects can be stored or retrieved
+from databases, and which geometrical operations can be defined for
+them.
+
+As we will see, the `{sf}` library works very well with the
+`{tidyverse}`.
 
 ``` r
+# The packages to install for today
 # install.packages(c("tidyverse", "sf", "ggrepel",
 #                    "tmap", "tmaptools"))
 
@@ -23,7 +26,10 @@ library(tidyverse)
 ```
 
 Useful to know: the `{sf}` library relies on external dependencies
-(GEOS, GDAL and proj).
+(GEOS, GDAL and PROJ). It is good to be aware of this as updates in
+those libraries can result in broken R code. Beware of this.
+
+Let’s load the `{sf}` library.
 
 ``` r
 library(sf) # the library for spatial data visualisation
@@ -32,14 +38,16 @@ library(sf) # the library for spatial data visualisation
     ## Linking to GEOS 3.8.1, GDAL 3.1.1, PROJ 6.3.1
 
 `{sf}` functions are all consistent: they all start with `st_*`, which
-stands for spatio temporal.
+stands for `s`patio `t`emporal.
 
-Let’s start by creating a point in space.
+Let’s start by creating a point in space, which corresponds to the
+centre of Geneva University, UniMail.
 
 ``` r
 # creating our first spatial object, a point in space
 unimail_point <- st_point(x = c(46.1952452857602, 6.14051554056255))
 
+# check it out how it looks like and its class
 unimail_point 
 ```
 
@@ -51,9 +59,12 @@ class(unimail_point)
 
     ## [1] "XY"    "POINT" "sfg"
 
+Since UniMail is actually best represented by a polygon than by one
+point, let’s see how we can build a polygon for it.
+
 ``` r
 # creating  a more familiar tibble, with latitude and longitude coordinates
-# each location is a vertex of unimail
+# each location is a vertex of unimail building
 
 unimail_df <- tribble(
   ~location, ~lat, ~lon,
@@ -61,9 +72,9 @@ unimail_df <- tribble(
   "b", 46.19491952134567, 6.141224481424885,
   "c", 46.194671442623196, 6.138677026705302,
   "d", 46.195630227161544, 6.139834520389675
-  )
+)
 
-unimail_df 
+unimail_df
 ```
 
     ## # A tibble: 4 x 3
@@ -77,10 +88,14 @@ unimail_df
 ``` r
 # we transform the unimail_df into a sf data.frame
 
-unimail <- unimail_df %>% 
-  st_as_sf(coords=c("lon", "lat"), #selecting the variables with the coordinates
-           crs = "EPSG:4326") # selecting the projection
+unimail <- unimail_df %>%
+  st_as_sf(
+    coords = c("lon", "lat"), # selecting the variables with the coordinates
+    crs = "EPSG:4326" # selecting the projection
+  ) 
 
+# check out how the coordinates are stored
+# a new nested column has been created which is called geometry
 
 unimail
 ```
@@ -99,10 +114,22 @@ unimail
     ## 4 d        (6.139835 46.19563)
 
 ``` r
+class(unimail)
+```
+
+    ## [1] "sf"         "tbl_df"     "tbl"        "data.frame"
+
+From a simple tibble, we have created an `sf data.frame`, which has a
+`geometry` column that is a list column containing the geometries we
+want. The geometry column is an `sfc`, a `simple feature column`.
+
+``` r
 plot(unimail)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
+We now have 4 points, let’s create a polygon.
 
 ``` r
 # from a series of point, we actually want to create a polygon
@@ -112,7 +139,7 @@ unimail_polygon <- unimail %>%
   group_by(location_name) %>%
   dplyr::summarise() %>%
   st_cast("POLYGON") %>% # will cast the points to a polygon
-  st_convex_hull() # makes sure the polygon is not convex
+  st_convex_hull() # makes sure the polygon is not convex, try to remove it to see
 ```
 
     ## `summarise()` ungrouping output (override with `.groups` argument)
@@ -135,7 +162,7 @@ unimail_polygon
 plot(unimail_polygon)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 ``` r
 class(unimail_polygon)
@@ -157,29 +184,30 @@ unimail_polygon
     ## * <chr>                                                            <POLYGON [°]>
     ## 1 unimail       ((6.139941 46.19378, 6.138677 46.19467, 6.139835 46.19563, 6.14…
 
-## From sfg (simple feature geometry) to sfc (simple feature column) to sf data frame
-
 Why use this data type and `{sf}`
 
   - Fast reading and writing of data
-  - **visualisation**: enhanced plotting performance and new `geom_sf()`
-    for `{ggplot}.`
-  - **transferability**`sf data.frames` can be treated as data frames in
-    most operations
-  - **uniformity**: `{sf}` functions can be combined using %\>% operator
-    and works
-  - works well with the tidyverse collection of R packages
-  - **consistency**sf function names are relatively consistent and
-    intuitive (all begin with st\_)
+  - **visualisation**: enhanced plotting performance (`plot()`) and new
+    `geom_sf()` for `{ggplot}.`
+  - **transferability**: `sf data.frames` can be treated as data frames
+    in most operations
+  - **compatibility**: `{sf}` functions can be combined using `%>%`
+    operator
+  - **compatibility**: works well with the tidyverse collection of R
+    packages
+  - **consistency**: `{sf}` function names are relatively consistent and
+    intuitive (all begin with `st_`)
 
 ## Properties of `sf data.frame`s
 
-  - geometries are sticky
+  - geometries are sticky\!
 
 <!-- end list -->
 
 ``` r
-unimail_polygon %>% 
+# Try these commands, they will not remove the geometry column
+
+unimail_polygon %>%
   select(-geometry)
 ```
 
@@ -194,7 +222,7 @@ unimail_polygon %>%
     ## 1 unimail       ((6.139941 46.19378, 6.138677 46.19467, 6.139835 46.19563, 6.14…
 
 ``` r
-unimail_polygon %>% 
+unimail_polygon %>%
   select(location_name)
 ```
 
@@ -209,7 +237,7 @@ unimail_polygon %>%
     ## 1 unimail       ((6.139941 46.19378, 6.138677 46.19467, 6.139835 46.19563, 6.14…
 
 ``` r
-unimail_polygon[,"location_name"]
+unimail_polygon[, "location_name"]
 ```
 
     ## Simple feature collection with 1 feature and 1 field
@@ -233,7 +261,7 @@ st_drop_geometry(unimail_polygon)
     ## * <chr>        
     ## 1 unimail
 
-## Waste bins in Geneva
+## Case Study 1: Checking waste bins close to UniMail building
 
 Data downloaded from the Système d’information du territoire à Genève
 (SITG).
@@ -245,7 +273,7 @@ shapefiles.
 # locations of geneva bins
 # loading a shapefile
 
-bins <- st_read("data/SHP_VDG_CORBEILLES_DECHETS/VDG_CORBEILLES_DECHETS.shp") 
+bins <- st_read("data/SHP_VDG_CORBEILLES_DECHETS/VDG_CORBEILLES_DECHETS.shp")
 ```
 
     ## Reading layer `VDG_CORBEILLES_DECHETS' from data source `/Users/gruggeri/Documents/projects/r_lunch_feb2021/data/SHP_VDG_CORBEILLES_DECHETS/VDG_CORBEILLES_DECHETS.shp' using driver `ESRI Shapefile'
@@ -255,18 +283,18 @@ bins <- st_read("data/SHP_VDG_CORBEILLES_DECHETS/VDG_CORBEILLES_DECHETS.shp")
     ## bbox:           xmin: 2497537 ymin: 1115229 xmax: 2502660 ymax: 1120863
     ## projected CRS:  CH1903+ / LV95
 
-The data is although projectes using swiss mercator: “CH1903+ / LV95”,
+The data is although projected using Swiss Mercator: “CH1903+ / LV95”,
 we want to use although the same projection as the `unimail_polygon`,
-which is in the projection used in google maps.
+which is in the same projection used in Google Maps.
 
 ``` r
-bins <- bins %>% 
-  st_transform(crs = "EPSG:4326") #apply transformation
+bins <- bins %>%
+  st_transform(crs = "EPSG:4326") # apply projection transformation 
 ```
 
 ``` r
-# shapes for the roads
-roads <- st_read("data/SHP_GMO_GRAPHE_ROUTIER/GMO_GRAPHE_ROUTIER.shp") %>% 
+# shapes for the roads: a collection of linestrings
+roads <- st_read("data/SHP_GMO_GRAPHE_ROUTIER/GMO_GRAPHE_ROUTIER.shp") %>%
   st_transform(crs = "EPSG:4326")
 ```
 
@@ -278,8 +306,8 @@ roads <- st_read("data/SHP_GMO_GRAPHE_ROUTIER/GMO_GRAPHE_ROUTIER.shp") %>%
     ## projected CRS:  CH1903+ / LV95
 
 ``` r
-# shapes for the water
-water <- st_read("data/SHP_GEO_LAC/GEO_LAC.shp") %>% 
+# shapes for the water: a collection of polygons
+water <- st_read("data/SHP_GEO_LAC/GEO_LAC.shp") %>%
   st_transform(crs = "EPSG:4326")
 ```
 
@@ -290,73 +318,95 @@ water <- st_read("data/SHP_GEO_LAC/GEO_LAC.shp") %>%
     ## bbox:           xmin: 2485388 ymin: 1110037 xmax: 2510891 ymax: 1136120
     ## projected CRS:  CH1903+ / LV95
 
-## Plotting geometries with `{ggplot2}`
+### Plotting geometries with `{ggplot2}`
 
-`geom_sf()` is our new ggplot2 friend
-
-``` r
-ggplot()+
-  geom_sf(
-    data =water,
-    fill = "lightblue"
-    )
-```
-
-![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+`geom_sf()` is our new `{ggplot2}` friend. It will automatically check
+the type of geometry it needs to plot.
 
 ``` r
-ggplot()+
+ggplot() +
   geom_sf(
-    data =water,
+    data = water,
     fill = "lightblue"
-    )+
-  geom_sf(
-    data = roads,
-    color = "#fde293")
+  )
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
+For plotting spatial data we reason in the same way we do with
+`{ggplot2}`, we add layer by layer and the layer order matters\!
+
 ``` r
-ggplot()+
+ggplot() +
   geom_sf(
-    data =water,
+    data = water,
     fill = "lightblue"
-    )+
+  ) +
   geom_sf(
     data = roads,
-    color = "#fde293") +
-  theme_void()+ # adding theme void
-  coord_sf(ylim = c(46.193854, 46.205765),
-           xlim = c(6.134706, 6.151571)) # zooming in
+    color = "#fde293"
+  )
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 ``` r
-# plot the data 
-ggplot()+
+ggplot() +
   geom_sf(
-    data =water,
+    data = water,
     fill = "lightblue"
-    )+
+  ) +
   geom_sf(
     data = roads,
-    color = "#fde293") +
-  geom_sf(data =unimail_polygon,  # adding polys
-          fill = "yellow") +
-  geom_sf(data = bins, # and the bins
-          alpha = 0.1) +
-  coord_sf(ylim = c(46.193854, 46.205765),
-           xlim = c(6.134706, 6.151571)) +
-  labs(title = "Geneva",
-       caption = "Source: Système d'information \n du territoire à Genève (SITG)")+
-  theme_void(base_size = 10)
+    color = "#fde293"
+  ) +
+  theme_void() + # adding theme void
+  coord_sf(
+    ylim = c(46.193854, 46.205765),
+    xlim = c(6.134706, 6.151571)
+  ) # zooming in
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
-## Manipulating geometries
+``` r
+# plot the data
+ggplot() +
+  geom_sf(
+    data = water,
+    fill = "lightblue"
+  ) +
+  geom_sf(
+    data = roads,
+    color = "#fde293"
+  ) +
+  geom_sf(
+    data = unimail_polygon, # adding polys
+    fill = "yellow"
+  ) +
+  geom_sf(
+    data = bins, # and the bins
+    alpha = 0.1
+  ) +
+  coord_sf(
+    ylim = c(46.193854, 46.205765),
+    xlim = c(6.134706, 6.151571)
+  ) +
+  labs(
+    title = "Geneva",
+    caption = "Source: Système d'information \n du territoire à Genève (SITG)"
+  ) +
+  theme_void(base_size = 10)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+
+### Manipulating the unimail polygon
+
+The advantage of using `{sf}` objects to deal with spatial data, is that
+we can do spatial operations with them, in a pretty simple way. Let’s
+find the city trash bins that intersect with our UniMail polygon. How
+many are there?
 
 ``` r
 st_intersection(unimail_polygon, bins)
@@ -377,22 +427,31 @@ st_intersection(unimail_polygon, bins)
     ## * <chr>         <chr>   <chr>  <chr>   <dbl>         <POINT [°]>
     ## 1 unimail       VVP     110l   <NA>        0 (6.140845 46.19511)
 
+Just 1 trash bin, let’s plot it:
+
 ``` r
-ggplot()+
+ggplot() +
   geom_sf(
-    data =water,
+    data = water,
     fill = "lightblue"
-    )+
+  ) +
   geom_sf(
     data = roads,
-    color = "#fde293") +
-  geom_sf(data =unimail_polygon,  # adding polys
-          fill = "yellow") +
-  geom_sf(data = st_intersection(unimail_polygon, bins)) + #only unimail bin
-  coord_sf(ylim = c(46.193854, 46.205765),
-           xlim = c(6.134706, 6.151571)) +
-  labs(title = "Geneva",
-       caption = "Source: Système d'information \n du territoire à Genève (SITG)")+
+    color = "#fde293"
+  ) +
+  geom_sf(
+    data = unimail_polygon, # adding polys
+    fill = "yellow"
+  ) +
+  geom_sf(data = st_intersection(unimail_polygon, bins)) + # only unimail bin
+  coord_sf(
+    ylim = c(46.193854, 46.205765),
+    xlim = c(6.134706, 6.151571)
+  ) +
+  labs(
+    title = "Geneva",
+    caption = "Source: Système d'information \n du territoire à Genève (SITG)"
+  ) +
   theme_void(base_size = 10)
 ```
 
@@ -401,13 +460,16 @@ ggplot()+
     ## Warning: attribute variables are assumed to be spatially constant throughout all
     ## geometries
 
-![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
 
-Let’s look a bit further away from the polygon
+Let’s look a bit further away from the polygon. To do this, we need to
+create a buffer around the UniMail polygon and use this buffered zone as
+intersect.
 
 ``` r
-buffered_polys <-  st_buffer(unimail_polygon, 
-                             dist = 0.001) # distance is in degrees..
+buffered_polys <- st_buffer(unimail_polygon,
+  dist = 0.001
+) # distance is in degrees..
 ```
 
     ## Warning in st_buffer.sfc(st_geometry(x), dist, nQuadSegs, endCapStyle =
@@ -416,17 +478,21 @@ buffered_polys <-  st_buffer(unimail_polygon,
     ## dist is assumed to be in decimal degrees (arc_degrees).
 
 ``` r
-ggplot()+
+ggplot() +
   geom_sf(
     data = buffered_polys,
     fill = "lightblue"
-    )+
+  ) +
   geom_sf(
     data = unimail_polygon,
-    color = "#fde293")
+    color = "#fde293"
+  )
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
+
+Then we can repeat the same operation, but you will see now that there
+are many more trash bins that intersect with the buffered geometry.
 
 ``` r
 st_intersection(buffered_polys, bins)
@@ -458,22 +524,29 @@ st_intersection(buffered_polys, bins)
     ## # … with 34 more rows
 
 ``` r
-ggplot()+
+ggplot() +
   geom_sf(
-    data =water,
+    data = water,
     fill = "lightblue"
-    )+
+  ) +
   geom_sf(
     data = roads,
-    color = "#fde293") +
-  geom_sf(data =unimail_polygon, 
-          fill = "yellow") +
-  geom_sf(data = st_intersection(buffered_polys, bins))+ # bins close to unimail 
-  coord_sf(ylim = c(46.193854, 46.205765),
-           xlim = c(6.134706, 6.151571)) +
-  labs(title = "Geneva",
-       subtitle= glue::glue("Near UNIMAIL there are {nrow(st_intersection(buffered_polys, bins))} bins "),
-       caption = "Source: Système d'information \n du territoire à Genève (SITG)")+
+    color = "#fde293"
+  ) +
+  geom_sf(
+    data = unimail_polygon,
+    fill = "yellow"
+  ) +
+  geom_sf(data = st_intersection(buffered_polys, bins)) + # bins close to unimail
+  coord_sf(
+    ylim = c(46.193854, 46.205765),
+    xlim = c(6.134706, 6.151571)
+  ) +
+  labs(
+    title = "Geneva",
+    subtitle = glue::glue("Near UNIMAIL there are {nrow(st_intersection(buffered_polys, bins))} bins "),
+    caption = "Source: Système d'information \n du territoire à Genève (SITG)"
+  ) +
   theme_void(base_size = 10)
 ```
 
@@ -487,19 +560,19 @@ ggplot()+
     ## Warning: attribute variables are assumed to be spatially constant throughout all
     ## geometries
 
-![](README_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
 
-## Overview presentation
+## Case Study 2: Making thematic maps (choropleth maps) of COVID-19 data
 
-## Making thematic maps (choropleth maps) of COVID-19 data
+### Importing the data
 
 ``` r
-#importing COVID data
+# importing COVID data
 swiss_covid_latest <- read_csv("data/latest_swiss_data.csv")
 ```
 
     ## 
-    ## ── Column specification ──────────────────────────────────────────────────────────────
+    ## ── Column specification ────────────────────────────────────────────────────────
     ## cols(
     ##   date = col_date(format = ""),
     ##   abbreviation_canton_and_fl = col_character(),
@@ -526,10 +599,8 @@ glimpse(swiss_covid_latest)
     ## $ population                 <dbl> 678207, 16145, 55234, 1034977, 288132, 194…
     ## $ incidence                  <dbl> 5050.228, 5147.104, 5190.643, 4882.717, 43…
 
-### Importing the shapefiles
-
 ``` r
-canton_shape <- st_read("data/SHAPEFILE_LV03_LN02/swissBOUNDARIES3D_1_3_TLM_KANTONSGEBIET.shp")
+canton_shape <- st_read("data/SHAPEFILE_LV03_LN02/swissBOUNDARIES3D_1_3_TLM_KANTONSGEBIET.shp") # shapefiles for swiss cantons
 ```
 
     ## Reading layer `swissBOUNDARIES3D_1_3_TLM_KANTONSGEBIET' from data source `/Users/gruggeri/Documents/projects/r_lunch_feb2021/data/SHAPEFILE_LV03_LN02/swissBOUNDARIES3D_1_3_TLM_KANTONSGEBIET.shp' using driver `ESRI Shapefile'
@@ -569,11 +640,14 @@ glimpse(canton_shape)
     ## $ geometry   <POLYGON [m]> POLYGON Z ((709776.1 185646..., POLYGON Z ((646448…
 
 ``` r
+# will use this dataset to be able to merge swiss_covid_latest with
+# canton_shapes.
+
 codes <- read_csv("data/canton_codes.csv")
 ```
 
     ## 
-    ## ── Column specification ──────────────────────────────────────────────────────────────
+    ## ── Column specification ────────────────────────────────────────────────────────
     ## cols(
     ##   code = col_character(),
     ##   code_num = col_double()
@@ -599,9 +673,9 @@ codes
     ## # … with 16 more rows
 
 ``` r
-canton_shape <- canton_shape %>% 
-  left_join(codes, c("KANTONSNUM" = "code_num")) %>% 
-  left_join(swiss_covid_latest, c("code"= "abbreviation_canton_and_fl"))
+canton_shape <- canton_shape %>%
+  left_join(codes, c("KANTONSNUM" = "code_num")) %>%
+  left_join(swiss_covid_latest, c("code" = "abbreviation_canton_and_fl"))
 
 glimpse(canton_shape)
 ```
@@ -639,9 +713,9 @@ glimpse(canton_shape)
     ## $ geometry            <POLYGON [m]> POLYGON Z ((709776.1 185646..., POLYGON Z…
 
 ``` r
-#removing non useful columns
+# removing non useful columns
 
-canton_shape <- canton_shape %>% 
+canton_shape <- canton_shape %>%
   select(code, incidence)
 
 glimpse(canton_shape)
@@ -653,25 +727,39 @@ glimpse(canton_shape)
     ## $ incidence <dbl> 5028.254, 4882.717, 8489.773, 7911.581, 7589.792, 6389.835,…
     ## $ geometry  <POLYGON [m]> POLYGON Z ((709776.1 185646..., POLYGON Z ((646448.…
 
-### The `ggplot2` way
+### Plotting it the `ggplot2` way
 
 ``` r
-ggplot(data= canton_shape, 
-       aes(fill = incidence))+
+ggplot(
+  data = canton_shape,
+  aes(fill = incidence)
+) +
   geom_sf() +
   theme_void()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-30-1.png)<!-- -->
 
-I will now divide the continuous variable into categories. I will use
-quantiles, as usually this way allows for colors, and therefore
-categories, to be evenly distributed in our map.
+You may have noticed from the amount of thematic maps that you have
+probably digested in 2020 (COVID-19 and US elections to name a few big
+topics) that continuous colour scales are divided in categories, so we
+need to work with a categorical variable. I will now divide the
+continuous variable into categories. I will do this “manually” first
+computing the quantiles, as usually this way allows for colours, and
+therefore categories, to be evenly distributed in our map.
+
+> They would be actually evenly distributed if the areas were all of the
+> same size. This is one of the main flaws of thematic maps, as they
+> tend to magnify big areas. You have probably heard the motto “Land
+> doesn’t vote, people do” that was used to highlight the flaws of this
+> type of map to show votes for the US elections. This flaw was also
+> used by Trump to justify the idea that 2016 election was a landslide…
 
 ``` r
-quantile_vec <- quantile(canton_shape$incidence, 
-                         na.rm = TRUE, 
-                         probs = seq(0, 1, 0.2))
+quantile_vec <- quantile(canton_shape$incidence,
+  na.rm = TRUE,
+  probs = seq(0, 1, 0.2)
+)
 
 quantile_vec
 ```
@@ -684,9 +772,10 @@ quantile_vec
 
 labels <- tibble(
   lab1 = quantile_vec,
-  lab2 = c(quantile_vec[2:length(quantile_vec)], NA)) %>%
-  slice(1:n() - 1) %>% 
-  mutate_all(round, digits = 0) %>% 
+  lab2 = c(quantile_vec[2:length(quantile_vec)], NA)
+) %>%
+  slice(1:n() - 1) %>%
+  mutate_all(round, digits = 0) %>%
   mutate(labs = paste(lab1, lab2, sep = " -"))
 
 labels
@@ -720,33 +809,46 @@ glimpse(canton_shape)
     ## $ geometry      <POLYGON [m]> POLYGON Z ((709776.1 185646..., POLYGON Z ((646…
     ## $ incidence_cut <ord> 4662 -5028, 4662 -5028, 7912 -8931, 5191 -7912, 5191 -7…
 
-### Plotting the data, the ggplot way
+`incidence_cut` is the ordered categorical variable I have created and
+that I will use to map the `fill` argument to.
+
+### Plotting the data, the `{ggplot}` way
 
 ``` r
 ggplot(data = canton_shape) +
   geom_sf(aes(fill = incidence_cut)) +
-  rcartocolor::scale_fill_carto_d(type = "quantitative", 
-                                  palette = "BurgYl")+
+  rcartocolor::scale_fill_carto_d(
+    type = "quantitative",
+    palette = "BurgYl"
+  ) +
   theme_void() +
-  labs(fill = "",
-       title = paste0("Cumulative confirmed ", 
-                      "cases in Switzerland (per 100'000 population)"),
-       caption = str_glue("source: OFSP | updated {unique(canton_shape$date)}"))
+  labs(
+    fill = "",
+    title = paste0(
+      "Cumulative confirmed ",
+      "cases in Switzerland (per 100'000 population)"
+    ),
+    caption = str_glue("source: OFSP | updated {unique(canton_shape$date)}")
+  )
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
 
 ``` r
 ## Add labels to show the incidence by canton
 
 ggplot(data = canton_shape) +
   geom_sf(aes(fill = incidence_cut)) +
-  rcartocolor::scale_fill_carto_d(type = "quantitative", 
-                                  palette = "BurgYl")+
+  rcartocolor::scale_fill_carto_d(
+    type = "quantitative",
+    palette = "BurgYl"
+  ) +
   ggrepel::geom_label_repel(
     data = canton_shape,
-    aes(label = paste0(code,":",round(incidence, digits = 0)), 
-        geometry = geometry),
+    aes(
+      label = paste0(code, ":", round(incidence, digits = 0)),
+      geometry = geometry
+    ),
     stat = "sf_coordinates",
     min.segment.length = 0.2,
     colour = "#541f3f",
@@ -754,54 +856,126 @@ ggplot(data = canton_shape) +
     segment.alpha = 0.5
   ) +
   theme_void() +
-  labs(fill = "",
-       title = paste0("Cumulative confirmed ", 
-                      "cases in Switzerland (per 100'000 population)"),
-       caption = str_glue("source: OFSP | updated {unique(canton_shape$date)}"))
-```
-
-![](README_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
-
-### The `tmap` way
-
-``` r
-# install.packages(tmap)
-# install.packages(tmaptools)
-library(tmap) # library for thematic maps
-
-
-tm_shape(canton_shape) + 
-  tm_polygons(col = "incidence", 
-              style = "quantile", 
-              palette = "-viridis")
+  labs(
+    fill = "",
+    title = paste0(
+      "Cumulative confirmed ",
+      "cases in Switzerland (per 100'000 population)"
+    ),
+    caption = str_glue("source: OFSP | updated {unique(canton_shape$date)}")
+  )
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-35-1.png)<!-- -->
 
+### Exercise
+
+You might have noticed that there are more labels than what is needed.
+This results from the fact that we are using high resolution shapes,
+which result in the fact that each canton might be described by multiple
+polygons (e.g. Geneva has a piece of land that is in the middle of
+Canton Vaud). Try to make a new variable, that will contain only one
+label per canton, for plotting purposes.
+
+### The `tmap` way
+
+We have seen the `{ggplot2}` way of creating thematic maps. I tend to
+use and teach mostly `{ggplot2}` because of the transferability of
+concepts and because of the possibilities to use nice extension packages
+like `{cowplot}`, `{patchwork}`, `{gganimate}` and `{ggtext}`. There is
+also another reason: once you have learnt how to work with `{ggplot2}`,
+`{tmap}` (and `{leaflet}` for interactive maps) will be rather
+intuitive.
+
+`{tmap}` is indeed a package meant for plotting thematic maps and its
+conciseness is quite unbeatable. Look at the following code. You can see
+that with the `style` argument you can directly choose how to set
+categories for the continuous numerical variable. Quite convenient
+indeed…
+
 ``` r
-osmbb <-  tmaptools::bb(canton_shape,
-                        ext=1.1 )# to enlarge a bit the bounding box
+# install.packages(tmap)
+# install.packages(tmaptools)
 
-osmtiles <- tmaptools::read_osm(osmbb, type="esri-topo")
+library(tmap) # library for thematic maps
 
-tm_shape(osmtiles) + 
-  tm_rgb() +
-  tm_shape(canton_shape) + 
-  tm_polygons(col = "incidence", 
-              style = "quantile", 
-              palette = "-viridis") +
-  tm_layout(frame = FALSE)
+tm_shape(canton_shape) +
+  tm_polygons(
+    col = "incidence",
+    style = "quantile", # it divides the continuous colour scale using quantiles
+    palette = "YlOrBr" # using an rcolorbrewer here
+  )
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->
 
-To make your map interactive, use `tmap_mode("view")` before plotting it
+`{tmap}` has actually a lot of other nice cards to play. First, we can
+get the background tiles to plot our map on top. In this case, I will
+download the base tile from open street map, of the type `esri-topo` and
+then plot the choropleth (i.e. thematic map) on top of it.
 
 ``` r
-# tmap_mode("view") # make interactive
+# first I compute a bounding box around the cantons area
+osmbb <- tmaptools::bb(canton_shape,
+  ext = 1.1 # to enlarge a bit the bounding box
+) 
+
+# then I use the bounding box to download only that tile
+osmtiles <- tmaptools::read_osm(osmbb, type = "esri-topo")
+
+# now I can plot the choropleth on top of osmtiles
+tm_shape(osmtiles) +
+  tm_rgb() + 
+  tm_shape(canton_shape) +
+  tm_polygons(
+    col = "incidence",
+    style = "quantile",
+    palette = "YlOrBr"
+  ) +
+  tm_layout(frame = FALSE)
 ```
 
-## Dive deeper
+![](README_files/figure-gfm/unnamed-chunk-37-1.png)<!-- -->
+
+Second, we can easily make your map interactive, use `tmap_mode("view")`
+before plotting it. You can try running this command and then rerun the
+previous code. The shapes will be then plotted on top of a standard ESRI
+map.
+
+``` r
+#tmap_mode("view") # make interactive
+```
+
+> If you are getting errors because of the `{rJava}` installation on
+> your macOS, you can check the following resources:
+
+  - [Installing RJava on
+    MacOs](https://zhiyzuo.github.io/installation-rJava/)
+
+If `cask java8` is not possible, use `brew cask install
+homebrew/cask-versions/adoptopenjdk8` as pointed
+[here](https://github.com/dennisausbremen/macOStrap/issues/4).
+
+Another good resouce:
+
+  - <https://github.com/Utah-Data-Science/Home_repo/wiki/Getting-R-to-use-the-correct-Java-version>
+
+## Other packages for vector data
+
+  - `{stars}`: This packages is an enhancement of `{sf}` that also works
+    with rasters and it is meant for multidimensional datasets. It draws
+    from the idea of data cubes, and it is helpful when dealing with
+    time series spatial data. The problem with time series is that, if
+    we work with tidy data, we will repeat geometries multiple times,
+    making the data very large. This
+    [package](https://r-spatial.github.io/stars/) is meant to deal
+    exactly with this issue.
+
+  - `{leaflet}`: the go-to package for interactive maps. Take a look at
+    the documentation [here](https://rstudio.github.io/leaflet/) to find
+    more about it.
+
+## More resources
 
   - [Geocomputation with R](https://geocompr.robinlovelace.net)
   - [Spatial Data Science](https://keen-swartz-3146c4.netlify.app)

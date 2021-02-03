@@ -20,10 +20,12 @@ library(sf)
 
 ```{r}
 
-unimail_point <- st_point(x = c(46.1952452857602, 
-                                6.14051554056255))
+unimail_point <- st_point(x = c(
+  46.1952452857602,
+  6.14051554056255
+))
 
-unimail_point 
+unimail_point
 
 class(unimail_point)
 ```
@@ -36,16 +38,18 @@ unimail_df <- tribble(
   "b", 46.19491952134567, 6.141224481424885,
   "c", 46.194671442623196, 6.138677026705302,
   "d", 46.195630227161544, 6.139834520389675
-  )
+)
 
-unimail_df 
+unimail_df
 ```
 
 ```{r}
 
-unimail <- unimail_df %>% 
-  st_as_sf(coords=c("lon", "lat"),
-           crs = "EPSG:4326")
+unimail <- unimail_df %>%
+  st_as_sf(
+    coords = c("lon", "lat"),
+    crs = "EPSG:4326"
+  )
 
 
 unimail
@@ -60,11 +64,11 @@ plot(unimail)
 ```{r}
 
 unimail_polygon <- unimail %>%
-  mutate(location_name = "unimail") %>% 
+  mutate(location_name = "unimail") %>%
   group_by(location_name) %>%
   dplyr::summarise() %>%
-  st_cast("POLYGON") %>% 
-  st_convex_hull() 
+  st_cast("POLYGON") %>%
+  st_convex_hull()
 
 unimail_polygon
 ```
@@ -82,14 +86,13 @@ class(unimail_polygon)
 
 ```{r}
 
-unimail_polygon %>% 
+unimail_polygon %>%
   select(-geometry)
 
-unimail_polygon %>% 
+unimail_polygon %>%
   select(location_name)
 
-unimail_polygon[,"location_name"]
-
+unimail_polygon[, "location_name"]
 ```
 
 
@@ -101,85 +104,95 @@ st_drop_geometry(unimail_polygon)
 
 ```{r}
 
-bins <- st_read("data/SHP_VDG_CORBEILLES_DECHETS/VDG_CORBEILLES_DECHETS.shp") 
-
+bins <- st_read("data/SHP_VDG_CORBEILLES_DECHETS/VDG_CORBEILLES_DECHETS.shp")
 ```
 
 
 
 ```{r}
-bins <- bins %>% 
+bins <- bins %>%
   st_transform(crs = "EPSG:4326")
-
 ```
 
 
 ```{r}
 # shapes for the roads
-roads <- st_read("data/SHP_GMO_GRAPHE_ROUTIER/GMO_GRAPHE_ROUTIER.shp") %>% 
+roads <- st_read("data/SHP_GMO_GRAPHE_ROUTIER/GMO_GRAPHE_ROUTIER.shp") %>%
   st_transform(crs = "EPSG:4326")
 
 # shapes for the water
-water <- st_read("data/SHP_GEO_LAC/GEO_LAC.shp") %>% 
+water <- st_read("data/SHP_GEO_LAC/GEO_LAC.shp") %>%
   st_transform(crs = "EPSG:4326")
 ```
 
 
 ```{r}
-ggplot()+
+ggplot() +
   geom_sf(
     data = water,
     fill = "lightblue"
-    )
+  )
 ```
 
 
 ```{r}
-ggplot()+
+ggplot() +
   geom_sf(
-    data =water,
+    data = water,
     fill = "lightblue"
-    )+
+  ) +
   geom_sf(
     data = roads,
-    color = "grey80")
+    color = "grey80"
+  )
 ```
 
 ```{r}
-ggplot()+
+ggplot() +
   geom_sf(
-    data =water,
+    data = water,
     fill = "lightblue"
-    )+
+  ) +
   geom_sf(
     data = roads,
-    color = "grey80") +
+    color = "grey80"
+  ) +
   theme_void() + # adding theme void
-  coord_sf(ylim = c(46.193854, 46.205765),
-           xlim = c(6.134706, 6.151571)) # zooming in
+  coord_sf(
+    ylim = c(46.193854, 46.205765),
+    xlim = c(6.134706, 6.151571)
+  ) # zooming in
 ```
 
 
 ```{r}
-# plot the data 
-ggplot()+
+# plot the data
+ggplot() +
   geom_sf(
-    data =water,
+    data = water,
     fill = "lightblue"
-    )+
+  ) +
   geom_sf(
     data = roads,
-    color = "grey80") +
-  geom_sf(data =unimail_polygon,  ##
-          fill = "yellow") +
-  geom_sf(data = bins, ##
-          alpha = 0.1) +
-  coord_sf(ylim = c(46.193854, 46.205765),
-           xlim = c(6.134706, 6.151571)) +
-  labs(title = "Geneva",
-       caption = "Source: Système d'information \n du territoire à Genève (SITG)")+
+    color = "grey80"
+  ) +
+  geom_sf(
+    data = unimail_polygon, ##
+    fill = "yellow"
+  ) +
+  geom_sf(
+    data = bins, ##
+    alpha = 0.1
+  ) +
+  coord_sf(
+    ylim = c(46.193854, 46.205765),
+    xlim = c(6.134706, 6.151571)
+  ) +
+  labs(
+    title = "Geneva",
+    caption = "Source: Système d'information \n du territoire à Genève (SITG)"
+  ) +
   theme_void()
-
 ```
 
 
@@ -188,38 +201,47 @@ st_intersection(unimail_polygon, bins)
 ```
 
 ```{r}
-ggplot()+
+ggplot() +
   geom_sf(
-    data =water,
+    data = water,
     fill = "lightblue"
-    )+
+  ) +
   geom_sf(
     data = roads,
-    color = "grey80") +
-  geom_sf(data =unimail_polygon,  
-          fill = "yellow") +
+    color = "grey80"
+  ) +
+  geom_sf(
+    data = unimail_polygon,
+    fill = "yellow"
+  ) +
   geom_sf(data = st_intersection(unimail_polygon, bins)) + ##
-  coord_sf(ylim = c(46.193854, 46.205765),
-           xlim = c(6.134706, 6.151571)) +
-  labs(title = "Geneva",
-       caption = "Source: Système d'information \n du territoire à Genève (SITG)")+
+  coord_sf(
+    ylim = c(46.193854, 46.205765),
+    xlim = c(6.134706, 6.151571)
+  ) +
+  labs(
+    title = "Geneva",
+    caption = "Source: Système d'information \n du territoire à Genève (SITG)"
+  ) +
   theme_void(base_size = 10)
 ```
 
 
 
 ```{r}
-buffered_polys <-  st_buffer(unimail_polygon, 
-                             dist = 0.001)
+buffered_polys <- st_buffer(unimail_polygon,
+  dist = 0.001
+)
 
-ggplot()+
+ggplot() +
   geom_sf(
     data = buffered_polys,
     fill = "lightblue"
-    )+
+  ) +
   geom_sf(
     data = unimail_polygon,
-    color = "#fde293")
+    color = "#fde293"
+  )
 ```
 
 
@@ -230,24 +252,30 @@ st_intersection(buffered_polys, bins)
 
 ```{r}
 
-ggplot()+
+ggplot() +
   geom_sf(
-    data =water,
+    data = water,
     fill = "lightblue"
-    )+
+  ) +
   geom_sf(
     data = roads,
-    color = "grey80") +
-  geom_sf(data =unimail_polygon, 
-          fill = "yellow") +
+    color = "grey80"
+  ) +
+  geom_sf(
+    data = unimail_polygon,
+    fill = "yellow"
+  ) +
   geom_sf(data = st_intersection(buffered_polys, bins)) + ##
-  coord_sf(ylim = c(46.193854, 46.205765),
-           xlim = c(6.134706, 6.151571)) +
-  labs(title = "Geneva",
-       subtitle= glue::glue("Near UNIMAIL there are {nrow(st_intersection(buffered_polys, bins))} bins "),
-       caption = "Source: Système d'information \n du territoire à Genève (SITG)")+
+  coord_sf(
+    ylim = c(46.193854, 46.205765),
+    xlim = c(6.134706, 6.151571)
+  ) +
+  labs(
+    title = "Geneva",
+    subtitle = glue::glue("Near UNIMAIL there are {nrow(st_intersection(buffered_polys, bins))} bins "),
+    caption = "Source: Système d'information \n du territoire à Genève (SITG)"
+  ) +
   theme_void(base_size = 10)
-
 ```
 
 
@@ -258,7 +286,6 @@ ggplot()+
 swiss_covid_latest <- read_csv("data/latest_swiss_data.csv")
 
 glimpse(swiss_covid_latest)
-
 ```
 
 
@@ -278,9 +305,9 @@ codes
 
 
 ```{r}
-canton_shape <- canton_shape %>% 
-  left_join(codes, c("KANTONSNUM" = "code_num")) %>% 
-  left_join(swiss_covid_latest, c("code"= "abbreviation_canton_and_fl"))
+canton_shape <- canton_shape %>%
+  left_join(codes, c("KANTONSNUM" = "code_num")) %>%
+  left_join(swiss_covid_latest, c("code" = "abbreviation_canton_and_fl"))
 
 glimpse(canton_shape)
 ```
@@ -288,7 +315,7 @@ glimpse(canton_shape)
 
 ```{r}
 
-canton_shape <- canton_shape %>% 
+canton_shape <- canton_shape %>%
   select(code, incidence)
 
 glimpse(canton_shape)
@@ -297,8 +324,10 @@ glimpse(canton_shape)
 
 
 ```{r}
-ggplot(data= canton_shape, 
-       aes(fill = incidence))+
+ggplot(
+  data = canton_shape,
+  aes(fill = incidence)
+) +
   geom_sf() +
   theme_void()
 ```
@@ -306,9 +335,10 @@ ggplot(data= canton_shape,
 
 
 ```{r}
-quantile_vec <- quantile(canton_shape$incidence, 
-                         na.rm = TRUE, 
-                         probs = seq(0, 1, 0.2))
+quantile_vec <- quantile(canton_shape$incidence,
+  na.rm = TRUE,
+  probs = seq(0, 1, 0.2)
+)
 
 quantile_vec
 ```
@@ -319,9 +349,10 @@ quantile_vec
 
 labels <- tibble(
   lab1 = quantile_vec,
-  lab2 = c(quantile_vec[2:length(quantile_vec)], NA)) %>%
-  slice(1:n() - 1) %>% 
-  mutate_all(round, digits = 0) %>% 
+  lab2 = c(quantile_vec[2:length(quantile_vec)], NA)
+) %>%
+  slice(1:n() - 1) %>%
+  mutate_all(round, digits = 0) %>%
   mutate(labs = paste(lab1, lab2, sep = " -"))
 
 labels
@@ -331,11 +362,11 @@ labels
 ```{r}
 
 canton_shape <- canton_shape %>%
-  mutate(incidence_cut = cut(incidence, 
+  mutate(incidence_cut = cut(incidence,
     breaks = quantile_vec,
     labels = labels %>% pull(labs),
-    include.lowest = TRUE, 
-    ordered_result = TRUE, 
+    include.lowest = TRUE,
+    ordered_result = TRUE,
   ))
 
 glimpse(canton_shape)
@@ -346,25 +377,35 @@ glimpse(canton_shape)
 
 ggplot(data = canton_shape) +
   geom_sf(aes(fill = incidence_cut)) +
-  rcartocolor::scale_fill_carto_d(type = "quantitative", 
-                                  palette = "BurgYl")+
+  rcartocolor::scale_fill_carto_d(
+    type = "quantitative",
+    palette = "BurgYl"
+  ) +
   theme_void() +
-  labs(fill = "",
-       title = paste0("Cumulative confirmed ", 
-                      "cases in Switzerland (per 100'000 population)"),
-       caption = str_glue("source: OFSP | updated {unique(canton_shape$date)}"))
+  labs(
+    fill = "",
+    title = paste0(
+      "Cumulative confirmed ",
+      "cases in Switzerland (per 100'000 population)"
+    ),
+    caption = str_glue("source: OFSP | updated {unique(canton_shape$date)}")
+  )
 ```
 
 ```{r}
 
 ggplot(data = canton_shape) +
   geom_sf(aes(fill = incidence_cut)) +
-  rcartocolor::scale_fill_carto_d(type = "quantitative", 
-                                  palette = "BurgYl")+
+  rcartocolor::scale_fill_carto_d(
+    type = "quantitative",
+    palette = "BurgYl"
+  ) +
   ggrepel::geom_label_repel(
     data = canton_shape,
-    aes(label = paste0(code,":",round(incidence, digits = 0)), 
-        geometry = geometry),
+    aes(
+      label = paste0(code, ":", round(incidence, digits = 0)),
+      geometry = geometry
+    ),
     stat = "sf_coordinates",
     min.segment.length = 0.2,
     colour = "#541f3f",
@@ -372,11 +413,14 @@ ggplot(data = canton_shape) +
     segment.alpha = 0.5
   ) +
   theme_void() +
-  labs(fill = "",
-       title = paste0("Cumulative confirmed ", 
-                      "cases in Switzerland (per 100'000 population)"),
-       caption = str_glue("source: OFSP | updated {unique(canton_shape$date)}"))
-
+  labs(
+    fill = "",
+    title = paste0(
+      "Cumulative confirmed ",
+      "cases in Switzerland (per 100'000 population)"
+    ),
+    caption = str_glue("source: OFSP | updated {unique(canton_shape$date)}")
+  )
 ```
 
 
@@ -388,27 +432,30 @@ ggplot(data = canton_shape) +
 library(tmap) # library for thematic maps
 
 
-tm_shape(canton_shape) + 
-  tm_polygons(col = "incidence", 
-              style = "quantile", 
-              palette = "-viridis")
-
-
+tm_shape(canton_shape) +
+  tm_polygons(
+    col = "incidence",
+    style = "quantile",
+    palette = "-viridis"
+  )
 ```
 
 
 ```{r}
-osmbb <-  tmaptools::bb(canton_shape,
-                        ext=1.1 ) # to enlarge a bit the bounding box
+osmbb <- tmaptools::bb(canton_shape,
+  ext = 1.1
+) # to enlarge a bit the bounding box
 
-osmtiles <- tmaptools::read_osm(osmbb, type="esri-topo")
+osmtiles <- tmaptools::read_osm(osmbb, type = "esri-topo")
 
-tm_shape(osmtiles) + 
+tm_shape(osmtiles) +
   tm_rgb() +
-  tm_shape(canton_shape) + 
-  tm_polygons(col = "incidence", 
-              style = "quantile", 
-              palette = "-viridis") +
+  tm_shape(canton_shape) +
+  tm_polygons(
+    col = "incidence",
+    style = "quantile",
+    palette = "-viridis"
+  ) +
   tm_layout(frame = FALSE)
 ```
 
@@ -416,5 +463,3 @@ tm_shape(osmtiles) +
 ```{r}
 # tmap_mode("view") # make interactive
 ```
-
-
