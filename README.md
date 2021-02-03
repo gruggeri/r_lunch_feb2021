@@ -344,7 +344,7 @@ ggplot() +
   ) +
   geom_sf(
     data = roads,
-    color = "#fde293"
+    color = "grey80"
   )
 ```
 
@@ -358,7 +358,7 @@ ggplot() +
   ) +
   geom_sf(
     data = roads,
-    color = "#fde293"
+    color = "grey80"
   ) +
   theme_void() + # adding theme void
   coord_sf(
@@ -378,7 +378,7 @@ ggplot() +
   ) +
   geom_sf(
     data = roads,
-    color = "#fde293"
+    color = "grey80"
   ) +
   geom_sf(
     data = unimail_polygon, # adding polys
@@ -437,7 +437,7 @@ ggplot() +
   ) +
   geom_sf(
     data = roads,
-    color = "#fde293"
+    color = "grey80"
   ) +
   geom_sf(
     data = unimail_polygon, # adding polys
@@ -531,7 +531,7 @@ ggplot() +
   ) +
   geom_sf(
     data = roads,
-    color = "#fde293"
+    color = "grey80"
   ) +
   geom_sf(
     data = unimail_polygon,
